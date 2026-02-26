@@ -22,5 +22,6 @@ server:
 
 api:
   client:
+#    todo@lp API认证时，需要使用用户自身的AKSK，如何获取用户信息？
     access-key: 123
     secret-key: 456
