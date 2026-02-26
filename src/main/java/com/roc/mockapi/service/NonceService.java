@@ -33,11 +33,16 @@ public class NonceService {
      * 返回 0 表示失败（nonce 已存在，重复请求）
      */
     private static final String NONCE_LUA_SCRIPT = """
-            if redis.call('exists', KEYS[1]) == 1 then
-                return 0  -- nonce 已存在，拒绝
+            local ttl = tonumber(ARGV[1])
+            if not ttl or ttl <= 0 then
+                return 0
             end
-            redis.call('setex', KEYS[1], ARGV[1], 1)  -- 设置 nonce，TTL 为 ARGV[1] 秒
-            return 1  -- 成功
+            if redis.call('exists', KEYS[1]) == 1 then
+                return 0
+            end
+            redis.call('setnx', KEYS[1], '1')
+            redis.call('expire', KEYS[1], ttl)
+            return 1
             """;
 
     /**

@@ -4,6 +4,8 @@ import com.roc.apiclientsdk.module.response.ApiResponse;
 import com.roc.apiclientsdk.server.ApiServer;
 import com.roc.mockapi.ApiSignConstant;
 import com.roc.mockapi.service.NonceService;
+
+import cn.hutool.json.JSONUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -45,7 +47,7 @@ public class MockController {
         }
         /*防重放 end*/
 
-        String bodyJson = request.getHeader("bodyJson");
+        String bodyJson = JSONUtil.toJsonStr(user);
         String sign = request.getHeader("sign");
         ApiResponse response = apiServer.verifySignature(sign, nonce, timestamp, bodyJson);
         if (response.getCode() != 0) {
