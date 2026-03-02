@@ -29,21 +29,21 @@ public class MockController {
     private final NonceService nonceService;
 
     @PostMapping("")
-    public String name(@RequestBody User user, HttpServletRequest request) {
+    public ApiResponse name(@RequestBody User user, HttpServletRequest request) {
         String nonce = request.getHeader("nonce");
         String timestamp = request.getHeader("timestamp");
 
         /*防重放 begin*/
         if (timestamp == null || timestamp.isEmpty()) {
-            return "Header: timestamp must not be null or empty";
+            return ApiResponse.fail("Header: timestamp must not be null or empty");
         }
         long requestTime = Long.parseLong(timestamp);
         long timeDiff = System.currentTimeMillis() - requestTime;
         if (timeDiff > ApiSignConstant.REQUEST_VALID_MINUTES * 60 * 1000) {
-            return "request was expired, more than " + ApiSignConstant.REQUEST_VALID_MINUTES + " minutes";
+            return ApiResponse.fail("request was expired, more than " + ApiSignConstant.REQUEST_VALID_MINUTES + " minutes");
         }
         if (!nonceService.verifyAndRecordNonce(nonce)) {
-            return "Duplicate request detected (nonce replay)";
+            return ApiResponse.fail("Duplicate request detected (nonce replay)");
         }
         /*防重放 end*/
 
@@ -51,10 +51,10 @@ public class MockController {
         String sign = request.getHeader("sign");
         ApiResponse response = apiServer.verifySignature(sign, nonce, timestamp, bodyJson);
         if (response.getCode() != 0) {
-            return response.getMessage();
+            return response;
         }
 
-        return user.getUsername();
+        return ApiResponse.success(user.getUsername());
     }
 
 }
