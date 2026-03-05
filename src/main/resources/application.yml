@@ -1,27 +1,8 @@
 spring:
   application:
     name: mock-api
-  data:
-    redis:
-      host: localhost
-      port: 6379
-      password:
-      database: 0
-      timeout: 3000ms
-      lettuce:
-        pool:
-          max-active: 8
-          max-idle: 8
-          min-idle: 0
-          max-wait: -1ms
 
 server:
   port: 8010
   servlet:
     context-path: /api
-
-api:
-  client:
-#    todo@lp API认证时，需要使用用户自身的AKSK，如何获取用户信息？
-    access-key: 123
-    secret-key: 456

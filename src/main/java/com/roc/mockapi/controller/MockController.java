@@ -1,59 +1,23 @@
 package com.roc.mockapi.controller;
 
-import com.roc.apiclientsdk.module.response.ApiResponse;
-import com.roc.apiclientsdk.server.ApiServer;
-import com.roc.mockapi.ApiSignConstant;
-import com.roc.mockapi.service.NonceService;
-
-import cn.hutool.json.JSONUtil;
-import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.roc.mockapi.module.User;
-
-import jakarta.servlet.http.HttpServletRequest;
+import com.roc.apiclientsdk.module.ApiResponse;
+import com.roc.apiclientsdk.module.User;
 
 /**
- * @author lipeng
+ * @author roc
  * @since 2026/2/25 10:56
  */
 @RestController
 @RequestMapping("/name")
-@AllArgsConstructor
 public class MockController {
 
-    private final ApiServer apiServer;
-    private final NonceService nonceService;
-
     @PostMapping("")
-    public ApiResponse name(@RequestBody User user, HttpServletRequest request) {
-        String nonce = request.getHeader("nonce");
-        String timestamp = request.getHeader("timestamp");
-
-        /*防重放 begin*/
-        if (timestamp == null || timestamp.isEmpty()) {
-            return ApiResponse.fail("Header: timestamp must not be null or empty");
-        }
-        long requestTime = Long.parseLong(timestamp);
-        long timeDiff = System.currentTimeMillis() - requestTime;
-        if (timeDiff > ApiSignConstant.REQUEST_VALID_MINUTES * 60 * 1000) {
-            return ApiResponse.fail("request was expired, more than " + ApiSignConstant.REQUEST_VALID_MINUTES + " minutes");
-        }
-        if (!nonceService.verifyAndRecordNonce(nonce)) {
-            return ApiResponse.fail("Duplicate request detected (nonce replay)");
-        }
-        /*防重放 end*/
-
-        String bodyJson = JSONUtil.toJsonStr(user);
-        String sign = request.getHeader("sign");
-        ApiResponse response = apiServer.verifySignature(sign, nonce, timestamp, bodyJson);
-        if (response.getCode() != 0) {
-            return response;
-        }
-
+    public ApiResponse name(@RequestBody User user) {
         return ApiResponse.success(user.getUsername());
     }
 
